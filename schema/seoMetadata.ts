@@ -1,6 +1,6 @@
-import { list } from '@keystone-6/core';
-import { text, relationship, json } from '@keystone-6/core/fields';
-import { trackingFields, isAdminOrEditor } from './fields';
+import { list } from "@keystone-6/core";
+import { text, relationship, json } from "@keystone-6/core/fields";
+import { trackingFields, isAdminOrEditor } from "./fields";
 
 export const SeoMetadata = list({
   access: {
@@ -11,30 +11,33 @@ export const SeoMetadata = list({
       delete: isAdminOrEditor,
     },
   },
+  graphql: {
+    plural: "SeoMetadatas",
+  },
   fields: {
-    title: text({ 
+    title: text({
       validation: { isRequired: true },
     }),
     description: text({
       validation: { isRequired: true },
       ui: {
-        displayMode: 'textarea',
+        displayMode: "textarea",
       },
     }),
     keywords: text({
       ui: {
-        displayMode: 'textarea',
+        displayMode: "textarea",
       },
     }),
     ogImage: text(),
     canonicalUrl: text(),
     structuredData: json(),
     post: relationship({
-      ref: 'Post.seoMetadata',
+      ref: "Post.seoMetadata",
       many: false,
       ui: {
-        displayMode: 'cards',
-        cardFields: ['title', 'status'],
+        displayMode: "cards",
+        cardFields: ["title", "status"],
         linkToItem: true,
         inlineConnect: true,
       },
@@ -43,9 +46,9 @@ export const SeoMetadata = list({
   },
   ui: {
     listView: {
-      initialColumns: ['title', 'description', 'post'],
-      initialSort: { field: 'title', direction: 'ASC' },
+      initialColumns: ["title", "description", "post"],
+      initialSort: { field: "title", direction: "ASC" },
     },
-    labelField: 'title',
+    labelField: "title",
   },
 });

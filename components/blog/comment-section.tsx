@@ -6,39 +6,33 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-
-type Comment = {
-  id: string;
-  content: string;
-  createdAt: string;
-  author: {
-    id: string;
-    name: string;
-  };
-};
+import { Comment } from "@/types";
 
 interface CommentSectionProps {
   comments: Comment[];
   postId: string;
 }
 
-export default function CommentSection({ comments, postId }: CommentSectionProps) {
+export default function CommentSection({
+  comments,
+  postId,
+}: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newComment.trim()) {
       toast.error("Please enter a comment");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // In a real application, you would call your API here
     // For example: await addComment({ content: newComment, postId });
-    
+
     // Simulating API call
     setTimeout(() => {
       setIsSubmitting(false);
@@ -46,11 +40,11 @@ export default function CommentSection({ comments, postId }: CommentSectionProps
       toast.success("Your comment has been submitted for moderation");
     }, 1000);
   };
-  
+
   return (
     <div>
       <h3 className="text-2xl font-bold mb-6">Comments ({comments.length})</h3>
-      
+
       {/* Comment form */}
       <div className="mb-8">
         <form onSubmit={handleSubmitComment}>
@@ -65,20 +59,26 @@ export default function CommentSection({ comments, postId }: CommentSectionProps
           </Button>
         </form>
       </div>
-      
+
       {/* Comments list */}
       <div className="space-y-6">
         {comments.length > 0 ? (
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-4">
               <Avatar>
-                <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback>
+                  {comment.author?.name ? comment.author.name.charAt(0) : "A"}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="font-medium">{comment.author.name}</div>
+                  <div className="font-medium">
+                    {comment.author?.name || "Anonymous"}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(comment.createdAt), {
+                      addSuffix: true,
+                    })}
                   </div>
                 </div>
                 <p className="text-sm text-foreground">{comment.content}</p>

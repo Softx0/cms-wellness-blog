@@ -1,20 +1,26 @@
-import { GraphQLClient } from 'graphql-request';
+import { GraphQLClient } from "graphql-request";
+import type { Post } from "@/types";
 
-const endpoint = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/graphql';
+const endpoint =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/graphql";
 
 export const graphqlClient = new GraphQLClient(endpoint, {
-  credentials: 'include',
-  mode: 'cors',
+  credentials: "include",
+  mode: "cors",
 });
 
 // Helper function for authenticated requests
-export const authenticatedRequest = async (query: string, variables = {}, token?: string) => {
+export const authenticatedRequest = async (
+  query: string,
+  variables = {},
+  token?: string
+) => {
   if (token) {
-    graphqlClient.setHeader('Authorization', `Bearer ${token}`);
+    graphqlClient.setHeader("Authorization", `Bearer ${token}`);
   } else {
-    graphqlClient.setHeader('Authorization', '');
+    graphqlClient.setHeader("Authorization", "");
   }
-  
+
   return await graphqlClient.request(query, variables);
 };
 
@@ -58,9 +64,9 @@ export const getPosts = async ({ limit = 10, skip = 0, where = {} }) => {
 };
 
 // Function to get a single post by slug
-export const getPostBySlug = async (slug: string) => {
+export async function getPostBySlug(slug: string) {
   const query = `
-    query getPostBySlug($slug: String!) {
+    query getPost($slug: String!) {
       post(where: { slug: $slug }) {
         id
         title
@@ -69,7 +75,7 @@ export const getPostBySlug = async (slug: string) => {
         publishedAt
         excerpt
         content {
-          document
+          document(hydrateRelationships: true)
         }
         readingTimeMinutes
         featuredImage
@@ -88,7 +94,7 @@ export const getPostBySlug = async (slug: string) => {
           name
           slug
         }
-        comments(where: { status: { equals: "approved" } }) {
+        comments {
           id
           content
           createdAt
@@ -97,20 +103,18 @@ export const getPostBySlug = async (slug: string) => {
             name
           }
         }
-        seoMetadata {
-          title
-          description
-          keywords
-          ogImage
-          canonicalUrl
-          structuredData
-        }
       }
     }
   `;
 
-  return await graphqlClient.request(query, { slug });
-};
+  try {
+    const data = await graphqlClient.request<{ post: Post }>(query, { slug });
+    return data;
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    throw error;
+  }
+}
 
 // Function to get categories
 export const getCategories = async () => {
@@ -144,11 +148,14 @@ export const getTags = async () => {
 };
 
 // Function to add a comment
-export const addComment = async (data: {
-  content: string;
-  postId: string;
-  authorId?: string;
-}, token?: string) => {
+export const addComment = async (
+  data: {
+    content: string;
+    postId: string;
+    authorId?: string;
+  },
+  token?: string
+) => {
   const mutation = `
     mutation addComment($data: CommentCreateInput!) {
       createComment(data: $data) {
@@ -162,9 +169,66 @@ export const addComment = async (data: {
       content: data.content,
       post: { connect: { id: data.postId } },
       ...(data.authorId && { author: { connect: { id: data.authorId } } }),
-      status: "pending"
-    }
+      status: "pending",
+    },
   };
 
   return await authenticatedRequest(mutation, variables, token);
+};
+
+// Function to get pending comments for moderation
+export const getPendingComments = async (token?: string) => {
+  const query = `
+    query getPendingComments {
+      comments(where: { status: { equals: pending } }, orderBy: { createdAt: desc }) {
+        id
+        content
+        createdAt
+        status
+        author {
+          id
+          name
+          email
+        }
+        post {
+          id
+          title
+          slug
+        }
+      }
+    }
+  `;
+
+  return await authenticatedRequest(query, {}, token);
+};
+
+// Function to update comment status
+export const updateCommentStatus = async (
+  commentId: string,
+  status: "approved" | "rejected" | "pending",
+  token?: string
+) => {
+  const mutation = `
+    mutation updateCommentStatus($id: ID!, $status: CommentStatusType!) {
+      updateComment(where: { id: $id }, data: { status: $status }) {
+        id
+        status
+      }
+    }
+  `;
+
+  return await authenticatedRequest(mutation, { id: commentId, status }, token);
+};
+
+// Function to delete comment
+export const deleteComment = async (commentId: string, token?: string) => {
+  const mutation = `
+    mutation deleteComment($id: ID!) {
+      deleteComment(where: { id: $id }) {
+        id
+      }
+    }
+  `;
+
+  return await authenticatedRequest(mutation, { id: commentId }, token);
 };

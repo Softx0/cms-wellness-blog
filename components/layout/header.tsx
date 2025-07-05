@@ -2,12 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Moon, Sun, Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Moon, Sun, Menu, User, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth-client";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -20,6 +27,8 @@ const navigation = [
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -30,6 +39,16 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
+
+  const adminNavigation =
+    user?.role === "admin" ? [{ name: "Admin", href: "/admin/comments" }] : [];
+
+  const allNavigation = [...navigation, ...adminNavigation];
 
   return (
     <header
@@ -52,8 +71,8 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex md:space-x-8">
-            {navigation.map((item) => (
+          <nav className="hidden md:flex md:items-center md:space-x-8">
+            {allNavigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -67,9 +86,29 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            <Button asChild variant="default" size="sm">
-              <Link href="/login">Sign In</Link>
-            </Button>
+
+            {!loading &&
+              (user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {user.name}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button asChild variant="default" size="sm">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+              ))}
+
             <Button
               variant="ghost"
               size="icon"
@@ -101,7 +140,7 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <nav className="flex flex-col gap-4 mt-8">
-                  {navigation.map((item) => (
+                  {allNavigation.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
@@ -116,11 +155,35 @@ export default function Header() {
                       {item.name}
                     </Link>
                   ))}
-                  <Button asChild variant="default" className="mt-4">
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                      Sign In
-                    </Link>
-                  </Button>
+
+                  {!loading &&
+                    (user ? (
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          Logged in as {user.name}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            handleLogout();
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Logout
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button asChild variant="default" className="mt-4">
+                        <Link
+                          href="/login"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Sign In
+                        </Link>
+                      </Button>
+                    ))}
                 </nav>
               </SheetContent>
             </Sheet>
