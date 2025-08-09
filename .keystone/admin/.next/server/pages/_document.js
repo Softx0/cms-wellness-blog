@@ -50,7 +50,7 @@ module.exports = require("path");
 var __webpack_require__ = require("../webpack-runtime.js");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/@keystone-6"], () => (__webpack_exec__("../../node_modules/@keystone-6/core/node_modules/next/dist/pages/_document.js")));
+var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/@keystone-6","vendor-chunks/@swc"], () => (__webpack_exec__("../../node_modules/@keystone-6/core/node_modules/next/dist/pages/_document.js")));
 module.exports = __webpack_exports__;
 
 })();

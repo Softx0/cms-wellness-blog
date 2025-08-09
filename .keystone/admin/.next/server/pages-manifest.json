@@ -2,8 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/users": "pages/users.js",
-  "/init": "pages/init.js",
+  "/signin": "pages/signin.js",
+  "/posts": "pages/posts.js",
   "/": "pages/index.js",
-  "/users/[id]": "pages/users/[id].js"
+  "/comments": "pages/comments.js",
+  "/tags": "pages/tags.js",
+  "/posts/[id]": "pages/posts/[id].js"
 }
