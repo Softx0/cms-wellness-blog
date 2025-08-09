@@ -112,16 +112,29 @@ export default function LoginPage() {
   async function onRegisterSubmit(data: RegisterFormValues) {
     setIsLoading(true);
 
-    // In a real application, you would call your API here
-    // For example: await registerUser({ name: data.name, email: data.email, password: data.password });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
+      });
 
-    // Simulating API call
-    setTimeout(() => {
-      setIsLoading(false);
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Registration failed");
+      }
       toast.success("Registration successful! You can now login.");
       setActiveTab("login");
       loginForm.setValue("email", data.email);
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

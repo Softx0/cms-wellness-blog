@@ -27,30 +27,20 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/comments": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/comments.js"
-    ],
-    "/posts": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/posts.js"
-    ],
-    "/posts/[id]": [
-      "static/chunks/webpack.js",
-      "static/chunks/main.js",
-      "static/chunks/pages/posts/[id].js"
-    ],
     "/signin": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/signin.js"
     ],
-    "/tags": [
+    "/users": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/tags.js"
+      "static/chunks/pages/users.js"
+    ],
+    "/users/[id]": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/users/[id].js"
     ]
   },
   "ampFirstPages": []

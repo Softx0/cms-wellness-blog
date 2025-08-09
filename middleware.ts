@@ -5,6 +5,18 @@ import { verifyJwtToken, validateApiKey } from '@/lib/auth';
 export async function middleware(request: NextRequest) {
   // Handle API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
+    // Public auth endpoints (no JWT required)
+    const publicAuthEndpoints = [
+      '/api/auth/login',
+      '/api/auth/logout',
+      '/api/auth/register',
+      '/api/auth/forgot-password',
+      '/api/auth/reset-password',
+    ];
+    if (publicAuthEndpoints.some((p) => request.nextUrl.pathname.startsWith(p))) {
+      return NextResponse.next();
+    }
+
     // Check for API key authentication first
     const apiKeyUser = await validateApiKey(request);
     if (apiKeyUser) {

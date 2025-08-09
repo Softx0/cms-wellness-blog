@@ -110,7 +110,8 @@ var User = (0, import_core.list)({
   access: {
     operation: {
       query: () => true,
-      create: isAdmin,
+      // Permitir auto-registro público; controles adicionales se aplican por campo y hooks
+      create: () => true,
       update: isAdminOrOwner,
       delete: isAdmin
     },
@@ -143,6 +144,11 @@ var User = (0, import_core.list)({
       validation: { isRequired: true },
       ui: {
         displayMode: "segmented-control"
+      },
+      access: {
+        read: () => true,
+        create: isAdmin,
+        update: isAdmin
       }
     }),
     status: (0, import_fields2.select)({
@@ -156,6 +162,11 @@ var User = (0, import_core.list)({
       validation: { isRequired: true },
       ui: {
         displayMode: "segmented-control"
+      },
+      access: {
+        read: () => true,
+        create: isAdmin,
+        update: isAdmin
       }
     }),
     bio: (0, import_fields2.text)({
@@ -184,6 +195,22 @@ var User = (0, import_core.list)({
       many: true
     }),
     ...trackingFields
+  },
+  hooks: {
+    resolveInput: async ({ operation, resolvedData, context, item }) => {
+      const isAdminSession = context.session?.data?.role === "admin";
+      if (operation === "create" && !isAdminSession) {
+        resolvedData.role = "author";
+        resolvedData.status = "active";
+      }
+      if (operation === "update" && !isAdminSession) {
+        if ("role" in resolvedData)
+          delete resolvedData.role;
+        if ("status" in resolvedData)
+          delete resolvedData.status;
+      }
+      return resolvedData;
+    }
   },
   ui: {
     listView: {

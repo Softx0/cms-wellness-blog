@@ -6,7 +6,8 @@ export const User = list({
   access: {
     operation: {
       query: () => true,
-      create: isAdmin,
+      // Permitir auto-registro público; controles adicionales se aplican por campo y hooks
+      create: () => true,
       update: isAdminOrOwner,
       delete: isAdmin,
     },
@@ -38,6 +39,11 @@ export const User = list({
       ui: {
         displayMode: 'segmented-control',
       },
+      access: {
+        read: () => true,
+        create: isAdmin,
+        update: isAdmin,
+      },
     }),
     status: select({
       type: 'enum',
@@ -50,6 +56,11 @@ export const User = list({
       validation: { isRequired: true },
       ui: {
         displayMode: 'segmented-control',
+      },
+      access: {
+        read: () => true,
+        create: isAdmin,
+        update: isAdmin,
       },
     }),
     bio: text({
@@ -78,6 +89,22 @@ export const User = list({
       many: true,
     }),
     ...trackingFields,
+  },
+  hooks: {
+    resolveInput: async ({ operation, resolvedData, context, item }) => {
+      // En creación por self-service, forzar role/status seguros si no es admin
+      const isAdminSession = context.session?.data?.role === 'admin';
+      if (operation === 'create' && !isAdminSession) {
+        resolvedData.role = 'author';
+        resolvedData.status = 'active';
+      }
+      // En actualización por usuario no admin, impedir modificaciones de role/status
+      if (operation === 'update' && !isAdminSession) {
+        if ('role' in resolvedData) delete resolvedData.role;
+        if ('status' in resolvedData) delete resolvedData.status;
+      }
+      return resolvedData;
+    },
   },
   ui: {
     listView: {

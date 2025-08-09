@@ -2,10 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/signin": "pages/signin.js",
-  "/posts": "pages/posts.js",
+  "/comments/[id]": "pages/comments/[id].js",
+  "/users": "pages/users.js",
   "/": "pages/index.js",
-  "/comments": "pages/comments.js",
-  "/tags": "pages/tags.js",
-  "/posts/[id]": "pages/posts/[id].js"
+  "/signin": "pages/signin.js",
+  "/users/[id]": "pages/users/[id].js"
 }

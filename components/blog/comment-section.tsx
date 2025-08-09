@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Comment } from "@/types";
+import { addComment } from "@/lib/api";
+import { useAuth } from "@/lib/auth-client";
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -19,31 +21,54 @@ export default function CommentSection({
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, token } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newComment.trim()) {
+    const content = newComment.trim();
+    if (!content) {
       toast.error("Please enter a comment");
+      return;
+    }
+    if (content.length < 3) {
+      toast.error("Comment is too short");
+      return;
+    }
+    if (content.length > 1000) {
+      toast.error("Comment is too long (max 1000 chars)");
       return;
     }
 
     setIsSubmitting(true);
 
-    // In a real application, you would call your API here
-    // For example: await addComment({ content: newComment, postId });
-
-    // Simulating API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await addComment(
+        {
+          content,
+          postId,
+          authorId: user?.id,
+        },
+        token || undefined
+      );
       setNewComment("");
+      setSubmitted(true);
       toast.success("Your comment has been submitted for moderation");
-    }, 1000);
+    } catch (error) {
+      console.error("Add comment error:", error);
+      toast.error("Failed to submit comment");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div>
-      <h3 className="text-2xl font-bold mb-6">Comments ({comments.length})</h3>
+      <h3 className="text-2xl font-bold mb-2">Comments ({comments.length})</h3>
+      <p className="text-sm text-muted-foreground mb-6">
+        New comments are reviewed before appearing publicly.
+      </p>
 
       {/* Comment form */}
       <div className="mb-8">
@@ -54,9 +79,16 @@ export default function CommentSection({
             onChange={(e) => setNewComment(e.target.value)}
             className="mb-4 min-h-[100px]"
           />
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Post Comment"}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Post Comment"}
+            </Button>
+            {submitted && (
+              <span className="text-xs text-muted-foreground">
+                Submitted. Awaiting moderation.
+              </span>
+            )}
+          </div>
         </form>
       </div>
 
